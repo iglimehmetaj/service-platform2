@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-export default function LoginChoicePage() {
+export default function SignInPage() {
   const router = useRouter();
 
   return (
@@ -11,14 +11,14 @@ export default function LoginChoicePage() {
 
       <div className="flex space-x-6">
         <button
-          onClick={() => router.push("/company/login")}
+          onClick={() => router.push("/auth/company/login")}
           className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
           Company
         </button>
 
         <button
-          onClick={() => router.push("/client/login")}
+          onClick={() => router.push("/auth/client/login")}
           className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition"
         >
           Client
@@ -26,7 +26,7 @@ export default function LoginChoicePage() {
       </div>
 
       <p className="mt-8 text-gray-500">
-        Superadmin access only via <code>/admin/login</code>
+        Superadmin access only via <code>/auth/admin/login</code>
       </p>
     </div>
   );

@@ -23,8 +23,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Company   Company? @relation(fields: [companyId], references: [id])
-  companyId String? // Vetëm nëse user-i është i lidhur me një kompani
+  Company       Company?       @relation(fields: [companyId], references: [id])
+  companyId     String? // Vetëm nëse user-i është i lidhur me një kompani
+  appointments  Appointment[]
+  notifications Notification[]
+
+  conversationsAsParticipant1 Conversation[] @relation("Participant1")
+  conversationsAsParticipant2 Conversation[] @relation("Participant2")
+  messagesSent                Message[] // <-- Add this reverse relation for messages
 }
 
 enum Role {
@@ -45,21 +51,138 @@ model Company {
   users User[]
 
   subscriptions Subscription[] // <-- lidhja dyanshmërishte
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  services      Service[] // 👈 One-to-many with Service
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  appointments  Appointment[]
+  address       String? // street address or detailed location
+  latitude      Float? // precise GPS latitude
+  longitude     Float? // precise GPS longitude
 }
 
 model Subscription {
-  id             String  @id @default(cuid())
-  name           String  @unique
-  price          Float   @default(0)
+  id             String           @id @default(cuid())
+  name           String           @unique
+  price          Float            @default(0)
   durationInDays Int
-  isActive       Boolean @default(true)
+  isActive       Boolean          @default(true)
+  type           SubscriptionType // Add this line to differentiate between types
 
   company   Company @relation(fields: [companyId], references: [id])
   companyId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum SubscriptionType {
+  REGULAR
+  SUPERIOR
+}
+
+model Service {
+  id           String         @id @default(cuid())
+  name         String
+  description  String?
+  price        Decimal        @db.Decimal(10, 2) // 💸 Use Decimal for money
+  companyId    String
+  company      Company        @relation(fields: [companyId], references: [id])
+  categoryId   String?
+  category     Category?      @relation(fields: [categoryId], references: [id])
+  photos       ServicePhoto[] // 👈 One-to-many for photo URLs or uploads
+  duration     Int            @default(60) // or whatever default duration you want
+  appointments Appointment[] // relation to appointments
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model ServicePhoto {
+  id        String  @id @default(cuid())
+  url       String // 👈 You can store the image URL or path
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
+}
+
+model Category {
+  id       String     @id @default(cuid())
+  name     String
+  parentId String? // 👈 Self-referencing for tree structure
+  parent   Category?  @relation("CategoryToParent", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToParent") // 👈 Children categories
+  services Service[] // 👈 Optional: services under this category
+}
+
+model Appointment {
+  id String @id @default(cuid())
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
+
+  clientId String
+  client   User   @relation(fields: [clientId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  startTime DateTime
+  endTime   DateTime?
+
+  status AppointmentStatus @default(PENDING)
+  notes  String?
+  price  Decimal
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversations Conversation[] // <-- Add this reverse relation
+
+  @@index([companyId, startTime])
+  @@index([clientId, status])
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String // e.g. 'APPOINTMENT_CREATED', 'STATUS_CHANGED'
+  message   String
+  read      Boolean  @default(false)
+  relatedId String? // optional: e.g., appointment id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Conversation {
+  id             String      @id @default(cuid())
+  appointment    Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId  String
+  participant1   User        @relation("Participant1", fields: [participant1Id], references: [id])
+  participant1Id String
+  participant2   User        @relation("Participant2", fields: [participant2Id], references: [id])
+  participant2Id String
+  messages       Message[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([participant1Id, participant2Id, appointmentId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  sender         User         @relation(fields: [senderId], references: [id])
+  senderId       String
+  content        String
+  read           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }

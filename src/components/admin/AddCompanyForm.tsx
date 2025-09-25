@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cities } from '../../app/help/helper';
 
 export default function AddCompanyForm() {
   const [formData, setFormData] = useState({
@@ -8,6 +9,9 @@ export default function AddCompanyForm() {
     description: "",
     logo: "",
     location: "",
+    address:"",
+    latitude:"",
+    longitude:"",
     openingTime: "",
     closingTime: "",
   });
@@ -15,10 +19,15 @@ export default function AddCompanyForm() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const handleChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+) => {
+  setFormData({
+    ...formData,
+    [e.target.name]: e.target.value,
+  });
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +52,9 @@ export default function AddCompanyForm() {
         description: "",
         logo: "",
         location: "",
+        address:"",
+        latitude:"",
+        longitude:"",
         openingTime: "",
         closingTime: "",
       });
@@ -86,13 +98,16 @@ export default function AddCompanyForm() {
             onChange={handleChange}
             placeholder="https://example.com/logo.png"
           />
-          <InputField
-            label="Lokacioni"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            placeholder="Tiranë, Prishtinë..."
-          />
+         <SelectField
+  label="Lokacioni"
+  name="location"
+  value={formData.location}
+  onChange={handleChange}
+  options={cities}
+  required
+  placeholder="Zgjidh qytetin"
+/>
+
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,6 +124,31 @@ export default function AddCompanyForm() {
             value={formData.closingTime}
             onChange={handleChange}
             type="time"
+           
+          />
+        </div>
+
+        {/* {address,lat,long} */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <InputField
+            label="Adresa"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+           
+          />
+           <InputField
+            label="Latitudes"
+            name="latitude"
+            value={formData.latitude}
+            onChange={handleChange}
+            
+          />
+          <InputField
+            label="Longitude"
+            name="longitude"
+            value={formData.longitude}
+            onChange={handleChange}
           />
         </div>
       </div>
@@ -189,6 +229,50 @@ function TextAreaField({
         placeholder={placeholder}
         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
+    </div>
+  );
+}
+
+
+function SelectField({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  required = false,
+  placeholder = "Zgjidh qytetin",
+}: {
+ label: string;
+  name: string;
+  value: string;
+onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  options: { name: string }[];
+  required?: boolean;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        {label}
+      </label>
+      <select
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="" disabled>
+          {placeholder}
+        </option>
+        {options.map((option, index) => (
+          <option key={index} value={option.name}>
+            {option.name}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
