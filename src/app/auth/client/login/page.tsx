@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter,useSearchParams } from "next/navigation";
 import { Home, Lock, Mail, User } from "lucide-react";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 export default function ClientLoginForm() {
   const [email, setEmail] = useState("");
@@ -115,6 +116,13 @@ export default function ClientLoginForm() {
             >
               Sign In
             </button>
+                  
+<Link
+  href="/auth/client/register"
+  className="block text-center w-full bg-gradient-to-r from-blue-700 to-blue-900 text-white font-extrabold py-4 rounded-2xl hover:from-blue-900 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-lg transition transform hover:-translate-y-0.5"
+>
+  Register
+</Link>
           </form>
         </div>
       </div>
