@@ -51,7 +51,7 @@ const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const menuItems = [
     { id: "appointments", label: "Takimet e mia", icon: CalendarDays },
     { id: "profile", label: "Profili", icon: UserCheck },
-    { id: "chat", label: "Chat", icon: MessageCircle },
+    // { id: "chat", label: "Chat", icon: MessageCircle },
 
   ];
 

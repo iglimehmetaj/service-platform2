@@ -6,6 +6,17 @@ import { authOptions } from "@/app/lib/authOptions";
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
+   const session = await getServerSession(authOptions);
+  // Kontroll nëse përdoruesi është loguar
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Kontroll nëse përdoruesi ka rolin e duhur
+  if (session.user.role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const data = await req.json();
 
@@ -16,10 +27,8 @@ export async function POST(req: NextRequest) {
         logo: data.logo,
         location: data.location,
         address: data.address,
-        latitude: data.latitude ? parseFloat(data.latitude) : null,
-        longitude: data.longitude ? parseFloat(data.longitude) : null,
-        openingTime: data.openingTime,
-        closingTime: data.closingTime,
+        email: data.email,
+        phone: data.phone,
       },
     });
 
@@ -31,16 +40,16 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
- const session = await getServerSession(authOptions);
-  // Kontroll nëse përdoruesi është loguar
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+//  const session = await getServerSession(authOptions);
+//   // Kontroll nëse përdoruesi është loguar
+//   if (!session) {
+//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+//   }
 
-  // Kontroll nëse përdoruesi ka rolin e duhur
-  if (session.user.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+//   // Kontroll nëse përdoruesi ka rolin e duhur
+//   if (session.user.role !== "SUPER_ADMIN") {
+//     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+//   }
 
   try {
     const companies = await prisma.company.findMany();

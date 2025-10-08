@@ -1,6 +1,10 @@
 import React from "react";
 import ServiceCard from "./ServiceCard";
-import { Grid, List, Filter, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import { Navigation } from "swiper/modules";
 
 interface Service {
   id: string;
@@ -10,86 +14,97 @@ interface Service {
   category: { name: string };
   photos: { url: string }[];
   company: { name: string };
-  duration:any
+  duration: any;
 }
 
-interface ServicesGridProps {
-  services: Service[];
+interface ServicesCarouselProps {
+  services?: Service[];
   title?: string;
   subtitle?: string;
   showHeader?: boolean;
+  loading?: boolean;
 }
 
-const ServicesGrid: React.FC<ServicesGridProps> = ({ 
-  services, 
-  title = "Available Services",
-  subtitle = "Discover and book professional services near you",
-  showHeader = true 
+const ServicesCarousel: React.FC<ServicesCarouselProps> = ({
+  services = [],
+  title = "Të gjitha shërbimet",
+  showHeader = true,
+  loading = false,
 }) => {
-  return (
-    <div className="w-full">
-      {/* Header Section */}
-      {showHeader && (
-        <div className="mb-8 px-4">
-          <div className="max-w-7xl mx-auto">
-            {/* Title and subtitle */}
-            <div className="text-center mb-8">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
-                {title}
-              </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                {subtitle}
-              </p>
-            </div>
-
-            
-          </div>
-        </div>
-      )}
-
-      {/* Services Grid */}
-      <div className="px-4">
-        <div className="max-w-7xl mx-auto">
-          {services.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {services.map((service, index) => (
-                <div
-                  key={service.id}
-                  className="animate-fade-in-up"
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    animationFillMode: 'both'
-                  }}
-                >
-                  <ServiceCard service={service} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* Empty state */
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No services found
-              </h3>
-              
-            </div>
-          )}
-        </div>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <svg
+          className="animate-spin h-8 w-8 text-blue-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v8H4z"
+          ></path>
+        </svg>
       </div>
+    );
+  }
 
-      {/* Load more section */}
-      {services.length > 0 && services.length >= 12 && (
-        <div className="text-center mt-12 px-4">
-          <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
-            Load More Services
-          </button>
+  if (!services.length) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Search className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          No services found
+        </h3>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full relative">
+      {showHeader && (
+        <div className="mb-6 px-4 sm:px-8 md:px-12">
+          <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 text-left">
+            {title}
+          </h2>
         </div>
       )}
+
+      <div className="px-4 sm:px-8 md:px-12">
+        <Swiper
+          modules={[Navigation]}
+          navigation={true}
+          spaceBetween={20}
+          slidesPerView={4}
+          slidesPerGroup={4}
+          breakpoints={{
+            320: { slidesPerView: 1, slidesPerGroup: 1 },
+            640: { slidesPerView: 1, slidesPerGroup: 1 },
+            768: { slidesPerView: 2, slidesPerGroup: 2 },
+            1024: { slidesPerView: 3, slidesPerGroup: 3 },
+            1280: { slidesPerView: 4, slidesPerGroup: 4 },
+          }}
+        >
+          {services.map((service) => (
+            <SwiperSlide key={service.id}>
+              <ServiceCard service={service} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
     </div>
   );
 };
 
-export default ServicesGrid;
+export default ServicesCarousel;

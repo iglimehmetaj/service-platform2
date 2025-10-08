@@ -108,10 +108,18 @@ const SearchBar: React.FC = () => {
   };
 
   return (
-<div className="relative max-w-6xl mx-auto p-8 h-130">
-<h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight text-center">
-  REZERVO LEHTËSISHT SHËRBIMIN TËND
-</h1>
+    
+<div className="relative max-w-6xl mx-auto px-4 py-12 min-h-[80vh] flex flex-col ">
+  {/* Top Text Section */}
+  <div className="text-center mb-12">
+    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+      REZERVO LEHTËSISHT SHËRBIMIN TËND
+    </h1>
+    <p className="mt-4 text-lg md:text-xl text-black-600 max-w-2xl mx-auto">
+   Thjesht, shpejt dhe pa stres!
+    </p>
+  </div>
+
       {/* Main search container - Removed overflow-hidden */}
       <div className="relative bg-white/90 backdrop-blur-lg border border-white/20 rounded-2xl ">
         <div className="p-8">

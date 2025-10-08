@@ -24,13 +24,13 @@ model User {
   updatedAt DateTime @updatedAt
 
   Company       Company?       @relation(fields: [companyId], references: [id])
-  companyId     String? // Vetëm nëse user-i është i lidhur me një kompani
+  companyId     String? 
   appointments  Appointment[]
   notifications Notification[]
 
   conversationsAsParticipant1 Conversation[] @relation("Participant1")
   conversationsAsParticipant2 Conversation[] @relation("Participant2")
-  messagesSent                Message[] // <-- Add this reverse relation for messages
+  messagesSent                Message[] 
 }
 
 enum Role {
@@ -42,22 +42,20 @@ enum Role {
 model Company {
   id          String  @id @default(cuid())
   name        String
-  description String?
+  description String? @db.Text
   logo        String?
   location    String?
-  openingTime String?
-  closingTime String?
-
+  phone        String? 
+  email        String? 
   users User[]
-
-  subscriptions Subscription[] // <-- lidhja dyanshmërishte
-  services      Service[] // 👈 One-to-many with Service
+  subscriptions Subscription[] 
+  services      Service[] 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   appointments  Appointment[]
-  address       String? // street address or detailed location
-  latitude      Float? // precise GPS latitude
-  longitude     Float? // precise GPS longitude
+  address       String?
+  latitude      Float? 
+  longitude     Float? 
 }
 
 model Subscription {
@@ -66,7 +64,7 @@ model Subscription {
   price          Float            @default(0)
   durationInDays Int
   isActive       Boolean          @default(true)
-  type           SubscriptionType // Add this line to differentiate between types
+  type           SubscriptionType 
 
   company   Company @relation(fields: [companyId], references: [id])
   companyId String
@@ -83,22 +81,22 @@ enum SubscriptionType {
 model Service {
   id           String         @id @default(cuid())
   name         String
-  description  String?
-  price        Decimal        @db.Decimal(10, 2) // 💸 Use Decimal for money
+  description  String? @db.Text
+  price        Decimal        @db.Decimal(10, 2) 
   companyId    String
   company      Company        @relation(fields: [companyId], references: [id])
   categoryId   String?
   category     Category?      @relation(fields: [categoryId], references: [id])
-  photos       ServicePhoto[] // 👈 One-to-many for photo URLs or uploads
-  duration     Int            @default(60) // or whatever default duration you want
-  appointments Appointment[] // relation to appointments
+  photos       ServicePhoto[] 
+  duration     Int            @default(60) 
+  appointments Appointment[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 }
 
 model ServicePhoto {
   id        String  @id @default(cuid())
-  url       String // 👈 You can store the image URL or path
+  url       String 
   serviceId String
   service   Service @relation(fields: [serviceId], references: [id])
 }
@@ -106,10 +104,10 @@ model ServicePhoto {
 model Category {
   id       String     @id @default(cuid())
   name     String
-  parentId String? // 👈 Self-referencing for tree structure
+  parentId String? 
   parent   Category?  @relation("CategoryToParent", fields: [parentId], references: [id])
-  children Category[] @relation("CategoryToParent") // 👈 Children categories
-  services Service[] // 👈 Optional: services under this category
+  children Category[] @relation("CategoryToParent") 
+  services Service[] 
 }
 
 model Appointment {
@@ -134,7 +132,7 @@ model Appointment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  conversations Conversation[] // <-- Add this reverse relation
+  conversations Conversation[] 
 
   @@index([companyId, startTime])
   @@index([clientId, status])
@@ -152,10 +150,10 @@ model Notification {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  type      String // e.g. 'APPOINTMENT_CREATED', 'STATUS_CHANGED'
+  type      String 
   message   String
   read      Boolean  @default(false)
-  relatedId String? // optional: e.g., appointment id
+  relatedId String? 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

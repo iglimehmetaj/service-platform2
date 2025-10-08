@@ -7,6 +7,17 @@ import { getServerSession } from "next-auth";
 const prisma = new PrismaClient();
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+   const session = await getServerSession(authOptions);
+  // Kontroll nëse përdoruesi është loguar
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Kontroll nëse përdoruesi ka rolin e duhur
+  if (session.user.role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const data = await req.json();
     const companyId = params.id;
@@ -18,8 +29,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         description: data.description,
         logo: data.logo,
         location: data.location,
-        openingTime: data.openingTime,
-        closingTime: data.closingTime,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        latitude: data.latitude,
+        longitude: data.longitude,
+
       },
     });
 
@@ -30,23 +45,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-// export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-//   try {
-//     const companyId = params.id;
 
-//     await prisma.company.delete({
-//       where: { id: companyId },
-//     });
-
-//     return NextResponse.json({ message: "Kompania u fshi me sukses" });
-//   } catch (error) {
-//     console.error("Gabim në fshirjen e kompanisë:", error);
-//     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-//   }
-// }
 
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+   const session = await getServerSession(authOptions);
+  // Kontroll nëse përdoruesi është loguar
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Kontroll nëse përdoruesi ka rolin e duhur
+  if (session.user.role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const companyId = params.id;
 

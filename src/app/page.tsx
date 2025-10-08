@@ -63,7 +63,9 @@ export default function HomePage() {
       </section>
 
            <ServicesCarousel services={services} />
-
+            <br/>
+            <br/>
+            <br/>
            <Footer/>
 
     </div>

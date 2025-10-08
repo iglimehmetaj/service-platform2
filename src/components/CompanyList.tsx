@@ -15,6 +15,7 @@ import {
   Save
 } from "lucide-react";
 import { HashLoader } from "react-spinners";
+import toast from "react-hot-toast";
 
 interface Company {
   id: string;
@@ -22,8 +23,11 @@ interface Company {
   description?: string | null;
   logo?: string | null;
   location?: string | null;
-  openingTime?: string | null;
-  closingTime?: string | null;
+  phone:string | null;
+  email:string | null;
+  address:string | null;
+  latitude:string | null;
+  longitude:string | null;
 }
 
 interface EditFormData {
@@ -31,8 +35,11 @@ interface EditFormData {
   description: string;
   logo: string;
   location: string;
-  openingTime: string;
-  closingTime: string;
+  phone:string | null;
+  email:string | null;
+  address:string | null;
+  latitude:string | null;
+  longitude:string | null;
 }
 export default function CompanyList() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -45,8 +52,11 @@ export default function CompanyList() {
     description: "",
     logo: "",
     location: "",
-    openingTime: "",
-    closingTime: ""
+    email: "",
+    phone: "",
+    address:"",
+    latitude:"",
+    longitude:"",
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -69,24 +79,49 @@ export default function CompanyList() {
   }, []);
 
 const handleDelete = async (id: string, name: string) => {
-  if (confirm(`Je i sigurt që dëshiron ta fshish kompaninë "${name}"?`)) {
-    try {
-      const response = await fetch(`/api/companies/${id}`, {
-        method: "DELETE",
-      });
+  toast(
+    (t) => (
+      <div className="space-y-2">
+        <p className="font-medium text-slate-800">
+          Je i sigurt që dëshiron ta fshish kompaninë "<strong>{name}</strong>"?
+        </p>
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id); // Dismiss confirmation toast
+              const loadingId = toast.loading("Duke fshirë kompaninë...");
 
-      if (!response.ok) {
-        throw new Error("Gabim në fshirjen e kompanisë");
-      }
+              try {
+                const response = await fetch(`/api/companies/${id}`, {
+                  method: "DELETE",
+                });
 
-      // Nëse fshirja ka qenë e suksesshme, përditëso listën lokale:
-      setCompanies((prev) => prev.filter((c) => c.id !== id));
-      alert("Kompania u fshi me sukses!");
-    } catch (error) {
-      console.error("Gabim në fshirjen e kompanisë:", error);
-      alert("Gabim në fshirjen e kompanisë. Provoni përsëri.");
+                if (!response.ok) throw new Error();
+
+                setCompanies((prev) => prev.filter((c) => c.id !== id));
+                toast.success("Kompania u fshi me sukses!", { id: loadingId });
+              } catch {
+                toast.error("Gabim në fshirjen e kompanisë", { id: loadingId });
+              }
+            }}
+            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
+          >
+            Po, fshije
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-3 py-1 text-sm border border-slate-300 rounded hover:bg-slate-100 transition"
+          >
+            Anulo
+          </button>
+        </div>
+      </div>
+    ),
+    {
+      duration: 10000, // Optional: auto-dismiss after 10s
+      position: "top-center",
     }
-  }
+  );
 };
 
   const handleEdit = (company: Company) => {
@@ -96,8 +131,12 @@ const handleDelete = async (id: string, name: string) => {
       description: company.description || "",
       logo: company.logo || "",
       location: company.location || "",
-      openingTime: company.openingTime || "",
-      closingTime: company.closingTime || ""
+      email: company.email || "",
+      phone: company.phone || "",
+      address: company.address || "",
+      latitude: company.latitude || "",
+      longitude: company.longitude || "",
+
     });
   };
 
@@ -108,8 +147,11 @@ const handleDelete = async (id: string, name: string) => {
       description: "",
       logo: "",
       location: "",
-      openingTime: "",
-      closingTime: ""
+      email: "",
+      phone: "",
+      address:"",
+      latitude:"",
+      longitude:"",
     });
   };
 
@@ -124,9 +166,15 @@ const handleDelete = async (id: string, name: string) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify({
+    ...editFormData,
+    latitude: editFormData.latitude ? parseFloat(editFormData.latitude) : null,
+    longitude: editFormData.longitude ? parseFloat(editFormData.longitude) : null,
+  }),
       });
+      toast.success("Kompani u përditësua me sukses!");
 
+      
       if (!response.ok) {
         throw new Error('Gabim në përditësimin e kompanisë');
       }
@@ -142,12 +190,17 @@ const handleDelete = async (id: string, name: string) => {
 
       handleCloseModal();
     } catch (error) {
-      console.error('Error updating company:', error);
-      alert('Gabim në përditësimin e kompanisë');
+      toast.error("Gabim në përditësimin e kompanisë.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  function truncateWords(text: string, wordLimit: number) {
+  const words = text.split(' ');
+  if (words.length <= wordLimit) return text;
+  return words.slice(0, wordLimit).join(' ') + '...';
+}
 
   const filteredCompanies = companies.filter(company =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -234,12 +287,13 @@ const handleDelete = async (id: string, name: string) => {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Emri</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Përshkrimi</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Vendndodhja</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Orari</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Telefoni</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase">Veprime</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredCompanies.map(({ id, logo, name, description, location, openingTime, closingTime }) => (
+              {filteredCompanies.map(({ id, logo, name, description, location, email, phone,address,latitude,longitude }) => (
                 <tr key={id} className="hover:bg-slate-50 transition-colors duration-200">
                   {/* Logo */}
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -257,24 +311,29 @@ const handleDelete = async (id: string, name: string) => {
 
                   {/* Description */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                    {description || '-'}
-                  </td>
+                        {description ? truncateWords(description, 6) : '-'}                 
+                   </td>
 
                   {/* Location */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                     {location || '-'}
                   </td>
 
-                  {/* Working hours */}
+                  {/* Email */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                    {(openingTime && closingTime) ? `${openingTime} - ${closingTime}` : '-'}
+                    {email || '-'}
+                  </td>
+
+                  {/* Telefoni */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    {phone || '-'}
                   </td>
 
                   {/* Actions */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                     <div className="flex justify-end space-x-2">
                       <button
-                        onClick={() => handleEdit({ id, logo, name, description, location, openingTime, closingTime })}
+                        onClick={() => handleEdit({ id, logo, name, description, location, email, phone,address,latitude,longitude })}
                         className="inline-flex items-center space-x-1 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-md hover:bg-slate-200 transition"
                         aria-label={`Edito kompaninë ${name}`}
                       >
@@ -301,19 +360,19 @@ const handleDelete = async (id: string, name: string) => {
 
       {/* Edit Modal */}
       {editingCompany && (
-        <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <h2 className="text-xl font-bold text-slate-800">Edito Kompaninë</h2>
-              <button
-                onClick={handleCloseModal}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                disabled={isSubmitting}
-              >
-                <X className="w-5 h-5 text-slate-500" />
-              </button>
-            </div>
+         <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 mx-4">
+      {/* Modal Header */}
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+        <h2 className="text-xl font-bold text-slate-800">Edito Kompaninë</h2>
+        <button
+          onClick={handleCloseModal}
+          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          disabled={isSubmitting}
+        >
+          <X className="w-5 h-5 text-slate-500" />
+        </button>
+      </div>
 
             {/* Modal Body */}
             <form onSubmit={handleSubmitEdit} className="p-6 space-y-4">
@@ -377,24 +436,65 @@ const handleDelete = async (id: string, name: string) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Ora e Hapjes
+                    Email
                   </label>
                   <input
-                    type="time"
-                    value={editFormData.openingTime}
-                    onChange={(e) => setEditFormData(prev => ({ ...prev, openingTime: e.target.value }))}
+                    type="email"
+                    value={editFormData.email ?? ""}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     disabled={isSubmitting}
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Ora e Mbylljes
+                    Telefoni
                   </label>
                   <input
-                    type="time"
-                    value={editFormData.closingTime}
-                    onChange={(e) => setEditFormData(prev => ({ ...prev, closingTime: e.target.value }))}
+                    type="text"
+                    value={editFormData.phone ?? ""}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+
+                                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.address ?? ""}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, address: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Latitude
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.latitude ?? ""}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, latitude: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Longitude
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.longitude ?? ""}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, longitude: e.target.value }))}
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     disabled={isSubmitting}
                   />
