@@ -202,7 +202,7 @@ export default function AddUserForm({ onSuccess, onCancel }: AddUserFormProps) {
             />
           </div>
           <p className="mt-2 text-sm text-slate-500">
-            Fjalëkalimi duhet të ketë të paktën 6 karaktere
+            Fjalëkalimi duhet të ketë të paktën 8 karaktere
           </p>
         </div>
 

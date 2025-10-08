@@ -150,7 +150,7 @@ export default function ClientRegisterForm({ onSuccess, onCancel }: ClientRegist
               </div>
               <input
                 type="password"
-                placeholder="Password (min 8 characters)"
+                placeholder="Password (min 9 characters)"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 className="w-full pl-14 pr-5 py-4 border border-blue-300 rounded-2xl focus:ring-4 focus:ring-blue-400 focus:border-transparent transition duration-300 text-blue-900 placeholder-blue-400 bg-blue-50"
